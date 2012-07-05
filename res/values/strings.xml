@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, MainActivity!</string>
+    <string name="app_name">FilesTube Search</string>
+    <string name="download">Download</string>
+    <string name="fetching_download_link">Fetching download link&#8230;</string>
+    <string name="search">Search</string>
+    <string name="search_hint">Search FilesTube</string>
+    <string name="searching">Searching, please wait&#8230;</string>
+    <string name="nothing_found">Nothing found</string>
+    <string name="menu_search">Search</string>
+
+</resources>
