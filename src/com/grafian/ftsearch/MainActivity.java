@@ -110,8 +110,10 @@ public class MainActivity extends SherlockActivity {
 		@Override
 		public void onItemClick(AdapterView<?> adapter, View view,
 				final int position, long id) {
-			SearchEngine.Item item = mResult.get(position);
-			new DownloadTask().execute(item.getId());
+			if (position < mResult.size()) {
+				SearchEngine.Item item = mResult.get(position);
+				new DownloadTask().execute(item.getId());
+			}
 		}
 	};
 

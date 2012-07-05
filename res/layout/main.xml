@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         ads:adSize="BANNER"
-        ads:adUnitId="a14f79ba3423004"
+        ads:adUnitId="a14ff5002d781c1"
         ads:loadAdOnCreate="true" />
 
 </LinearLayout>
