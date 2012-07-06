@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="4dip" >
+
+    <FrameLayout
+        android:layout_width="40dip"
+        android:layout_height="40dip" >
+
+        <ImageView
+            android:id="@+id/mainLinkIcon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_launcher" />
+
+        <TextView
+            android:id="@+id/mainLinkExt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textColor="@android:color/black"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dip"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/mainLinkTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:textColor="?android:attr/textColorAlertDialogListItem"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/mainLinkSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?android:attr/textColorAlertDialogListItem"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
@@ -87,16 +88,19 @@ public class MainActivity extends SherlockActivity {
 		}
 	}
 
+	@TargetApi(11)
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getSupportMenuInflater().inflate(R.menu.main, menu);
 
 		if (Build.VERSION.SDK_INT >= 11) {
 			// Get the SearchView and set the searchable configuration
-		    SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-		    SearchView searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
-		    searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-		    searchView.setQueryHint(getString(R.string.search_hint));
+			SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+			SearchView searchView = (SearchView) menu
+					.findItem(R.id.menu_search).getActionView();
+			searchView.setSearchableInfo(searchManager
+					.getSearchableInfo(getComponentName()));
+			searchView.setQueryHint(getString(R.string.search_hint));
 		}
 
 		return super.onCreateOptionsMenu(menu);
@@ -125,7 +129,7 @@ public class MainActivity extends SherlockActivity {
 				return true;
 			}
 		}
-	    return super.onMenuItemSelected(featureId, item);
+		return super.onMenuItemSelected(featureId, item);
 	}
 
 	/********************/
@@ -301,12 +305,6 @@ public class MainActivity extends SherlockActivity {
 		protected void onPostExecute(final ArrayList<SearchEngine.Link> result) {
 			mDialog.dismiss();
 
-			String[] actions = new String[result.size()];
-			for (int i = 0; i < result.size(); i++) {
-				SearchEngine.Link link = result.get(i);
-				actions[i] = link.getName();
-			}
-
 			DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
@@ -319,8 +317,45 @@ public class MainActivity extends SherlockActivity {
 			AlertDialog.Builder builder = new AlertDialog.Builder(
 					MainActivity.this);
 			builder.setTitle(R.string.download);
-			builder.setItems(actions, listener);
+			builder.setAdapter(new LinkAdapter(MainActivity.this,
+					R.layout.main_link_list_item, result), listener);
 			builder.create().show();
+		}
+	}
+
+	public class LinkAdapter extends ArrayAdapter<SearchEngine.Link> {
+
+		public LinkAdapter(Context context, int textViewResourceId,
+				ArrayList<SearchEngine.Link> items) {
+			super(context, textViewResourceId, items);
+		}
+
+		public View getView(int position, View convertView, ViewGroup parent) {
+			View view = convertView;
+			if (view == null) {
+				LayoutInflater inf = LayoutInflater.from(MainActivity.this);
+				view = inf.inflate(R.layout.main_link_list_item, null);
+			}
+
+			SearchEngine.Link link = getItem(position);
+			ImageView iconView = (ImageView) view.findViewById(R.id.mainLinkIcon);
+			TextView extView = (TextView) view.findViewById(R.id.mainLinkExt);
+			TextView title = (TextView) view.findViewById(R.id.mainLinkTitle);
+			TextView size = (TextView) view.findViewById(R.id.mainLinkSize);
+
+			Drawable icon = IconManager.getIcon(link.getExt());
+			iconView.setImageDrawable(icon);
+			title.setText(link.getName());
+			size.setText(link.getSize());
+
+			if (icon == IconManager.getDefault()) {
+				extView.setVisibility(View.VISIBLE);
+				extView.setText(link.getExt().toUpperCase());
+			} else {
+				extView.setVisibility(View.GONE);
+			}
+
+			return view;
 		}
 	}
 
@@ -333,22 +368,25 @@ public class MainActivity extends SherlockActivity {
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			View v = convertView;
-			if (v == null) {
+			View view = convertView;
+			if (view == null) {
 				LayoutInflater inf = LayoutInflater.from(MainActivity.this);
-				v = inf.inflate(R.layout.main_list_item, null);
+				view = inf.inflate(R.layout.main_list_item, null);
 			}
 
 			SearchEngine.Item item = getItem(position);
 
-			ImageView viewImage = (ImageView) v
+			ImageView viewImage = (ImageView) view
 					.findViewById(R.id.mainResultIcon);
-			TextView viewTitle = (TextView) v
+			TextView viewTitle = (TextView) view
 					.findViewById(R.id.mainResultTitle);
-			TextView viewDate = (TextView) v.findViewById(R.id.mainResultDate);
-			TextView viewSize = (TextView) v.findViewById(R.id.mainResultSize);
-			TextView viewExt = (TextView) v.findViewById(R.id.mainResultExt);
-			TextView viewSite = (TextView) v.findViewById(R.id.mainResultSite);
+			TextView viewDate = (TextView) view
+					.findViewById(R.id.mainResultDate);
+			TextView viewSize = (TextView) view
+					.findViewById(R.id.mainResultSize);
+			TextView viewExt = (TextView) view.findViewById(R.id.mainResultExt);
+			TextView viewSite = (TextView) view
+					.findViewById(R.id.mainResultSite);
 
 			Drawable icon = IconManager.getIcon(item.getExt());
 			viewImage.setImageDrawable(icon);
@@ -373,7 +411,7 @@ public class MainActivity extends SherlockActivity {
 				expand();
 			}
 
-			return v;
+			return view;
 		}
 	}
 }

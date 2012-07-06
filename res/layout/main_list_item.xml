@@ -35,9 +35,7 @@
             android:id="@+id/mainResultTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:lines="1"
-            android:text="Title"
-            android:textStyle="bold" />
+            android:textColor="?android:attr/textColorPrimaryDisableOnly" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -47,7 +45,6 @@
                 android:id="@+id/mainResultSize"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="23 MB"
                 android:textSize="12sp" />
 
             <TextView
@@ -55,7 +52,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="2012-05-23"
                 android:textSize="12sp" />
 
             <TextView
@@ -64,7 +60,6 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:paddingRight="4dip"
-                android:text="4shared.com"
                 android:textSize="12sp" />
         </RelativeLayout>
     </LinearLayout>

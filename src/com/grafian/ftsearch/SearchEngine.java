@@ -193,5 +193,17 @@ public class SearchEngine {
 		public String getLink() {
 			return mLink;
 		}
+
+		public String getExt() {
+			int index = mName.lastIndexOf('.');
+			if (index == -1) {
+				return "";
+			}
+			String ext = mName.substring(index + 1).trim();
+			if (ext.length() > 5) {
+				return "";
+			}
+			return ext;
+		}
 	}
 }
