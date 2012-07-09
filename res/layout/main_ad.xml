@@ -3,13 +3,14 @@
     xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:gravity="center" >
 
-    <ListView
-        android:id="@+id/mainResultList"
-        android:layout_width="fill_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1" >
-    </ListView>
+    <com.google.ads.AdView
+        android:id="@+id/mainAdView"
+        android:layout_width="320dp"
+        android:layout_height="50dp"
+        ads:adSize="BANNER"
+        ads:adUnitId="a14ff5002d781c1"
+        ads:loadAdOnCreate="true" />
 
 </LinearLayout>

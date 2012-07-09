@@ -33,6 +33,8 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.ads.AdRequest;
+import com.google.ads.AdView;
 
 public class MainActivity extends SherlockActivity {
 
@@ -47,6 +49,8 @@ public class MainActivity extends SherlockActivity {
 	private ArrayList<SearchEngine.Item> mResult = new ArrayList<SearchEngine.Item>();
 	private SearchTask mSearchTask;
 	private ExpandTask mExpandTask;
+	private View mAdLayout;
+	private AdView mAdView;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -55,6 +59,9 @@ public class MainActivity extends SherlockActivity {
 		setContentView(R.layout.main);
 
 		mResultList = (ListView) findViewById(R.id.mainResultList);
+
+		mAdLayout = LayoutInflater.from(this).inflate(R.layout.main_ad, null);
+		mAdView = (AdView) mAdLayout.findViewById(R.id.mainAdView);
 
 		// Work around: insert footer view before setAdapter()
 		mFooterView = LayoutInflater.from(this).inflate(
@@ -181,6 +188,7 @@ public class MainActivity extends SherlockActivity {
 
 		@Override
 		protected void onPreExecute() {
+			mAdView.loadAd(new AdRequest());
 			String message = getString(R.string.searching);
 			mDialog = new ProgressDialog(MainActivity.this);
 			mDialog.setCancelable(true);
@@ -213,13 +221,6 @@ public class MainActivity extends SherlockActivity {
 			mEof = mNextIndex > mTotal;
 			updateFooter();
 
-			mResult.clear();
-			mResult.addAll(result);
-			mResultAdapter.notifyDataSetChanged();
-			mResultList.setSelectionAfterHeaderView();
-
-			mSearchTask = null;
-
 			if (mTotal == 0) {
 				Toast.makeText(MainActivity.this, R.string.nothing_found,
 						Toast.LENGTH_LONG).show();
@@ -228,7 +229,15 @@ public class MainActivity extends SherlockActivity {
 						MainActivity.this,
 						"" + (mEngine.getIndex() + result.size() - 1) + " of "
 								+ mTotal, Toast.LENGTH_SHORT).show();
+				result.add((int) (Math.random() * (result.size() + 1)), null);
 			}
+
+			mResult.clear();
+			mResult.addAll(result);
+			mResultAdapter.notifyDataSetChanged();
+			mResultList.setSelectionAfterHeaderView();
+
+			mSearchTask = null;
 		}
 
 		@Override
@@ -255,15 +264,21 @@ public class MainActivity extends SherlockActivity {
 			mEof = mNextIndex > mTotal;
 			updateFooter();
 
+			Toast.makeText(
+					MainActivity.this,
+					"" + (mEngine.getIndex() + result.size() - 1) + " of "
+							+ mTotal, Toast.LENGTH_SHORT).show();
+
+			// Insert null link for ad
+			if ((mEngine.getIndex() / 10) % 2 == 0) {
+				result.add((int) (Math.random() * (result.size() + 1)), null);
+			}
+
 			mResult.addAll(result);
 			mResultAdapter.notifyDataSetChanged();
 
 			mExpandTask = null;
 
-			Toast.makeText(
-					MainActivity.this,
-					"" + (mEngine.getIndex() + result.size() - 1) + " of "
-							+ mTotal, Toast.LENGTH_SHORT).show();
 		}
 
 		@Override
@@ -330,15 +345,16 @@ public class MainActivity extends SherlockActivity {
 			super(context, textViewResourceId, items);
 		}
 
+		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
+			SearchEngine.Link link = getItem(position);
 			View view = convertView;
-			if (view == null) {
+			if (convertView == null) {
 				LayoutInflater inf = LayoutInflater.from(MainActivity.this);
 				view = inf.inflate(R.layout.main_link_list_item, null);
 			}
-
-			SearchEngine.Link link = getItem(position);
-			ImageView iconView = (ImageView) view.findViewById(R.id.mainLinkIcon);
+			ImageView iconView = (ImageView) view
+					.findViewById(R.id.mainLinkIcon);
 			TextView extView = (TextView) view.findViewById(R.id.mainLinkExt);
 			TextView title = (TextView) view.findViewById(R.id.mainLinkTitle);
 			TextView size = (TextView) view.findViewById(R.id.mainLinkSize);
@@ -368,43 +384,48 @@ public class MainActivity extends SherlockActivity {
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			View view = convertView;
-			if (view == null) {
-				LayoutInflater inf = LayoutInflater.from(MainActivity.this);
-				view = inf.inflate(R.layout.main_list_item, null);
-			}
-
+			View view;
 			SearchEngine.Item item = getItem(position);
-
-			ImageView viewImage = (ImageView) view
-					.findViewById(R.id.mainResultIcon);
-			TextView viewTitle = (TextView) view
-					.findViewById(R.id.mainResultTitle);
-			TextView viewDate = (TextView) view
-					.findViewById(R.id.mainResultDate);
-			TextView viewSize = (TextView) view
-					.findViewById(R.id.mainResultSize);
-			TextView viewExt = (TextView) view.findViewById(R.id.mainResultExt);
-			TextView viewSite = (TextView) view
-					.findViewById(R.id.mainResultSite);
-
-			Drawable icon = IconManager.getIcon(item.getExt());
-			viewImage.setImageDrawable(icon);
-			viewTitle.setText(item.getTitle());
-			viewDate.setText(item.getDate());
-			viewSite.setText(item.getSite());
-
-			if (item.getParts() == 1) {
-				viewSize.setText(item.getSize());
+			if (item == null) {
+				view = mAdLayout;
 			} else {
-				viewSize.setText(item.getSize() + " - " + item.getParts()
-						+ " parts");
-			}
-			if (icon == IconManager.getDefault()) {
-				viewExt.setVisibility(View.VISIBLE);
-				viewExt.setText(item.getExt().toUpperCase());
-			} else {
-				viewExt.setVisibility(View.GONE);
+				view = convertView;
+				if (view == null) {
+					LayoutInflater inf = LayoutInflater.from(MainActivity.this);
+					view = inf.inflate(R.layout.main_list_item, null);
+				}
+
+				ImageView viewImage = (ImageView) view
+						.findViewById(R.id.mainResultIcon);
+				TextView viewTitle = (TextView) view
+						.findViewById(R.id.mainResultTitle);
+				TextView viewDate = (TextView) view
+						.findViewById(R.id.mainResultDate);
+				TextView viewSize = (TextView) view
+						.findViewById(R.id.mainResultSize);
+				TextView viewExt = (TextView) view
+						.findViewById(R.id.mainResultExt);
+				TextView viewSite = (TextView) view
+						.findViewById(R.id.mainResultSite);
+
+				Drawable icon = IconManager.getIcon(item.getExt());
+				viewImage.setImageDrawable(icon);
+				viewTitle.setText(item.getTitle());
+				viewDate.setText(item.getDate());
+				viewSite.setText(item.getSite());
+
+				if (item.getParts() == 1) {
+					viewSize.setText(item.getSize());
+				} else {
+					viewSize.setText(item.getSize() + " - " + item.getParts()
+							+ " parts");
+				}
+				if (icon == IconManager.getDefault()) {
+					viewExt.setVisibility(View.VISIBLE);
+					viewExt.setText(item.getExt().toUpperCase());
+				} else {
+					viewExt.setVisibility(View.GONE);
+				}
 			}
 
 			if (position == getCount() - 1) {
@@ -412,6 +433,16 @@ public class MainActivity extends SherlockActivity {
 			}
 
 			return view;
+		}
+
+		@Override
+		public int getItemViewType(int position) {
+			return getItem(position) != null ? 0 : 1;
+		}
+
+		@Override
+		public int getViewTypeCount() {
+			return 2;
 		}
 	}
 }
