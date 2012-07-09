@@ -33,8 +33,6 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.google.ads.AdRequest;
-import com.google.ads.AdView;
 
 public class MainActivity extends SherlockActivity {
 
@@ -49,8 +47,8 @@ public class MainActivity extends SherlockActivity {
 	private ArrayList<SearchEngine.Item> mResult = new ArrayList<SearchEngine.Item>();
 	private SearchTask mSearchTask;
 	private ExpandTask mExpandTask;
-	private View mAdLayout;
-	private AdView mAdView;
+	private View mNextAd;
+	private Map<Integer, View> mAds = new HashMap<Integer, View>();
 
 	/** Called when the activity is first created. */
 	@Override
@@ -59,9 +57,6 @@ public class MainActivity extends SherlockActivity {
 		setContentView(R.layout.main);
 
 		mResultList = (ListView) findViewById(R.id.mainResultList);
-
-		mAdLayout = LayoutInflater.from(this).inflate(R.layout.main_ad, null);
-		mAdView = (AdView) mAdLayout.findViewById(R.id.mainAdView);
 
 		// Work around: insert footer view before setAdapter()
 		mFooterView = LayoutInflater.from(this).inflate(
@@ -143,6 +138,10 @@ public class MainActivity extends SherlockActivity {
 	/* Helper functions */
 	/********************/
 
+	protected void loadNextAd() {
+		mNextAd = LayoutInflater.from(this).inflate(R.layout.main_ad, null);
+	}
+
 	@SuppressWarnings("unchecked")
 	private void search(String query) {
 		if (mSearchTask == null) {
@@ -188,7 +187,8 @@ public class MainActivity extends SherlockActivity {
 
 		@Override
 		protected void onPreExecute() {
-			mAdView.loadAd(new AdRequest());
+			loadNextAd();
+
 			String message = getString(R.string.searching);
 			mDialog = new ProgressDialog(MainActivity.this);
 			mDialog.setCancelable(true);
@@ -227,11 +227,13 @@ public class MainActivity extends SherlockActivity {
 			} else {
 				Toast.makeText(
 						MainActivity.this,
-						"" + (mEngine.getIndex() + result.size() - 1) + " of "
-								+ mTotal, Toast.LENGTH_SHORT).show();
+						String.format("%d of %d",
+								mEngine.getIndex() + result.size() - 1, mTotal),
+						Toast.LENGTH_SHORT).show();
 				result.add((int) (Math.random() * (result.size() + 1)), null);
 			}
 
+			mAds.clear();
 			mResult.clear();
 			mResult.addAll(result);
 			mResultAdapter.notifyDataSetChanged();
@@ -251,6 +253,17 @@ public class MainActivity extends SherlockActivity {
 
 		private SearchEngine mEngine = new SearchEngine();
 
+		private boolean timeForAd() {
+			return (mNextIndex / 10) % 2 == 0;
+		}
+
+		@Override
+		protected void onPreExecute() {
+			if (timeForAd()) {
+				loadNextAd();
+			}
+		}
+
 		@Override
 		protected ArrayList<SearchEngine.Item> doInBackground(
 				Map<String, String>... params) {
@@ -259,26 +272,25 @@ public class MainActivity extends SherlockActivity {
 
 		@Override
 		protected void onPostExecute(ArrayList<SearchEngine.Item> result) {
+			Toast.makeText(
+					MainActivity.this,
+					String.format("%d of %d",
+							mEngine.getIndex() + result.size() - 1, mTotal),
+					Toast.LENGTH_SHORT).show();
+
+			if (timeForAd()) {
+				result.add((int) (Math.random() * (result.size() + 1)), null);
+			}
+
 			mTotal = mEngine.getTotal();
 			mNextIndex = mEngine.getIndex() + 10;
 			mEof = mNextIndex > mTotal;
 			updateFooter();
 
-			Toast.makeText(
-					MainActivity.this,
-					"" + (mEngine.getIndex() + result.size() - 1) + " of "
-							+ mTotal, Toast.LENGTH_SHORT).show();
-
-			// Insert null link for ad
-			if ((mEngine.getIndex() / 10) % 2 == 0) {
-				result.add((int) (Math.random() * (result.size() + 1)), null);
-			}
-
 			mResult.addAll(result);
 			mResultAdapter.notifyDataSetChanged();
 
 			mExpandTask = null;
-
 		}
 
 		@Override
@@ -387,7 +399,12 @@ public class MainActivity extends SherlockActivity {
 			View view;
 			SearchEngine.Item item = getItem(position);
 			if (item == null) {
-				view = mAdLayout;
+				if (mAds.containsKey(position)) {
+					view = mAds.get(position);
+				} else {
+					mAds.put(position, mNextAd);
+					view = mNextAd;
+				}
 			} else {
 				view = convertView;
 				if (view == null) {
