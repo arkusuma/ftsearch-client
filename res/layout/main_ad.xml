@@ -7,8 +7,8 @@
 
     <com.google.ads.AdView
         android:id="@+id/mainAdView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="320dp"
+        android:layout_height="50dp"
         ads:adSize="BANNER"
         ads:adUnitId="a14ff5002d781c1"
         ads:loadAdOnCreate="true" />
