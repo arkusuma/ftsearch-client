@@ -117,7 +117,9 @@ public class MainActivity extends SherlockActivity {
 				final int position, long id) {
 			if (position < mResult.size()) {
 				SearchEngine.Item item = mResult.get(position);
-				new DownloadTask().execute(item.getId());
+				if (item != null) {
+					new DownloadTask().execute(item.getId());
+				}
 			}
 		}
 	};
