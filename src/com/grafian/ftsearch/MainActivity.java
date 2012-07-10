@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,12 +44,13 @@ public class MainActivity extends SherlockActivity {
 	private Map<String, String> mQuery = new HashMap<String, String>();
 	private int mTotal;
 	private int mNextIndex;
-	private boolean mEof;
-	private ArrayList<SearchEngine.Item> mResult = new ArrayList<SearchEngine.Item>();
+
 	private SearchTask mSearchTask;
 	private ExpandTask mExpandTask;
-	private View mNextAd;
-	private Map<Integer, View> mAds = new HashMap<Integer, View>();
+
+	private final ArrayList<SearchEngine.Item> mResult = new ArrayList<SearchEngine.Item>();
+	private final SparseArray<View> mAds = new SparseArray<View>();
+	private AdLoader mAdLoader;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -57,20 +59,17 @@ public class MainActivity extends SherlockActivity {
 		setContentView(R.layout.main);
 
 		mResultList = (ListView) findViewById(R.id.mainResultList);
+		mAdLoader = new AdLoader(this);
 
-		// Work around: insert footer view before setAdapter()
+		// Work around for ListView footer bug
 		mFooterView = LayoutInflater.from(this).inflate(
 				R.layout.main_list_footer, null);
 		mResultList.addFooterView(mFooterView);
-
-		// Work around
 		mResultAdapter = new ResultAdapter(this, 0, mResult);
 		mResultList.setAdapter(mResultAdapter);
-
-		// Work around: remove footer view
 		mResultList.removeFooterView(mFooterView);
 
-		// Set event handlerr
+		// Set event handler
 		mResultList.setOnItemClickListener(mOnResultListItemClick);
 
 		// Get the intent, verify the action and get the query
@@ -138,10 +137,6 @@ public class MainActivity extends SherlockActivity {
 	/* Helper functions */
 	/********************/
 
-	protected void loadNextAd() {
-		mNextAd = LayoutInflater.from(this).inflate(R.layout.main_ad, null);
-	}
-
 	@SuppressWarnings("unchecked")
 	private void search(String query) {
 		if (mSearchTask == null) {
@@ -156,7 +151,7 @@ public class MainActivity extends SherlockActivity {
 
 	@SuppressWarnings("unchecked")
 	private void expand() {
-		if (mSearchTask == null && mExpandTask == null && !mEof) {
+		if (mSearchTask == null && mExpandTask == null && mNextIndex <= mTotal) {
 			mQuery.put("page", Integer.toString(mNextIndex / 10 + 1));
 			mExpandTask = new ExpandTask();
 			mExpandTask.execute(mQuery);
@@ -164,7 +159,7 @@ public class MainActivity extends SherlockActivity {
 	}
 
 	private void updateFooter() {
-		if (mEof) {
+		if (mNextIndex > mTotal) {
 			if (mResultList.getFooterViewsCount() > 0) {
 				mResultList.removeFooterView(mFooterView);
 			}
@@ -187,8 +182,6 @@ public class MainActivity extends SherlockActivity {
 
 		@Override
 		protected void onPreExecute() {
-			loadNextAd();
-
 			String message = getString(R.string.searching);
 			mDialog = new ProgressDialog(MainActivity.this);
 			mDialog.setCancelable(true);
@@ -218,7 +211,6 @@ public class MainActivity extends SherlockActivity {
 
 			mTotal = mEngine.getTotal();
 			mNextIndex = mEngine.getIndex() + 10;
-			mEof = mNextIndex > mTotal;
 			updateFooter();
 
 			if (mTotal == 0) {
@@ -253,17 +245,6 @@ public class MainActivity extends SherlockActivity {
 
 		private SearchEngine mEngine = new SearchEngine();
 
-		private boolean timeForAd() {
-			return (mNextIndex / 10) % 2 == 0;
-		}
-
-		@Override
-		protected void onPreExecute() {
-			if (timeForAd()) {
-				loadNextAd();
-			}
-		}
-
 		@Override
 		protected ArrayList<SearchEngine.Item> doInBackground(
 				Map<String, String>... params) {
@@ -278,13 +259,12 @@ public class MainActivity extends SherlockActivity {
 							mEngine.getIndex() + result.size() - 1, mTotal),
 					Toast.LENGTH_SHORT).show();
 
-			if (timeForAd()) {
+			if ((mNextIndex / 10) % 2 == 0) {
 				result.add((int) (Math.random() * (result.size() + 1)), null);
 			}
 
 			mTotal = mEngine.getTotal();
 			mNextIndex = mEngine.getIndex() + 10;
-			mEof = mNextIndex > mTotal;
 			updateFooter();
 
 			mResult.addAll(result);
@@ -399,11 +379,11 @@ public class MainActivity extends SherlockActivity {
 			View view;
 			SearchEngine.Item item = getItem(position);
 			if (item == null) {
-				if (mAds.containsKey(position)) {
+				if (mAds.get(position) != null) {
 					view = mAds.get(position);
 				} else {
-					mAds.put(position, mNextAd);
-					view = mNextAd;
+					view = mAdLoader.nextAd();
+					mAds.put(position, view);
 				}
 			} else {
 				view = convertView;
@@ -434,8 +414,8 @@ public class MainActivity extends SherlockActivity {
 				if (item.getParts() == 1) {
 					viewSize.setText(item.getSize());
 				} else {
-					viewSize.setText(item.getSize() + " - " + item.getParts()
-							+ " parts");
+					viewSize.setText(String.format("%s - %d parts",
+							item.getSize(), item.getParts()));
 				}
 				if (icon == IconManager.getDefault()) {
 					viewExt.setVisibility(View.VISIBLE);
