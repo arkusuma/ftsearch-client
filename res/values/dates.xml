@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="dates_key">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+    </string-array>
+    <string-array name="dates_val">
+        <item>whenever</item>
+        <item>last 24 hours</item>
+        <item>last week</item>
+        <item>last month</item>
+        <item>last 2 months</item>
+        <item>last 4 months</item>
+        <item>last 6 months</item>
+        <item>last year</item>
+    </string-array>
+
+</resources>

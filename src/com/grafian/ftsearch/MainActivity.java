@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -28,6 +29,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,7 +43,7 @@ public class MainActivity extends SherlockActivity {
 	private ResultAdapter mResultAdapter;
 	private View mFooterView;
 
-	private Map<String, String> mQuery = new HashMap<String, String>();
+	private final Map<String, String> mQuery = new HashMap<String, String>();
 	private int mTotal;
 	private int mNextIndex;
 
@@ -102,6 +104,15 @@ public class MainActivity extends SherlockActivity {
 			searchView.setSearchableInfo(searchManager
 					.getSearchableInfo(getComponentName()));
 			searchView.setQueryHint(getString(R.string.search_hint));
+			searchView.setOnSearchClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					String query = "";
+					if (mQuery.containsKey("q")) {
+						query = mQuery.get("q");
+					}
+					((SearchView) v).setQuery(query, false);
+				}
+			});
 		}
 
 		return super.onCreateOptionsMenu(menu);
@@ -112,7 +123,6 @@ public class MainActivity extends SherlockActivity {
 	/******************/
 
 	final private OnItemClickListener mOnResultListItemClick = new OnItemClickListener() {
-		@Override
 		public void onItemClick(AdapterView<?> adapter, View view,
 				final int position, long id) {
 			if (position < mResult.size()) {
@@ -126,11 +136,20 @@ public class MainActivity extends SherlockActivity {
 
 	@Override
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
-		if (Build.VERSION.SDK_INT < 11) {
-			if (item.getItemId() == R.id.menu_search) {
-				onSearchRequested();
+		switch (item.getItemId()) {
+		case R.id.menu_search:
+			if (Build.VERSION.SDK_INT < 11) {
+				String query = null;
+				if (mQuery.containsKey("q")) {
+					query = mQuery.get("q");
+				}
+				startSearch(query, true, null, false);
 				return true;
 			}
+			break;
+		case R.id.menu_filter:
+			showFilter();
+			break;
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
@@ -139,11 +158,19 @@ public class MainActivity extends SherlockActivity {
 	/* Helper functions */
 	/********************/
 
+	private void clearResult() {
+		mTotal = 0;
+		mNextIndex = 1;
+		mResult.clear();
+		mResultAdapter.notifyDataSetChanged();
+		updateFooter();
+	}
+
 	@SuppressWarnings("unchecked")
 	private void search(String query) {
 		if (mSearchTask == null) {
 			if (query.length() > 0) {
-				mQuery.clear();
+				mQuery.remove("page");
 				mQuery.put("q", query);
 				mSearchTask = new SearchTask();
 				mSearchTask.execute(mQuery);
@@ -172,6 +199,168 @@ public class MainActivity extends SherlockActivity {
 		}
 	}
 
+	private int findIndex(String s, int id) {
+		String[] array = getResources().getStringArray(id);
+		for (int i = 0; i < array.length; i++) {
+			if (s.equals(array[i])) {
+				return i;
+			}
+		}
+		return 0;
+	}
+
+	private void showFilter() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		View view = getLayoutInflater().inflate(R.layout.main_filter, null);
+		ArrayAdapter<CharSequence> adapter;
+
+		final Spinner site = (Spinner) view.findViewById(R.id.filterSite);
+		final Spinner ext = (Spinner) view.findViewById(R.id.filterExt);
+		final Spinner date = (Spinner) view.findViewById(R.id.filterDate);
+		final Spinner sort = (Spinner) view.findViewById(R.id.filterSort);
+		final TextView sizeMin = (TextView) view
+				.findViewById(R.id.filterSizeFrom);
+		final TextView sizeMax = (TextView) view
+				.findViewById(R.id.filterSizeTo);
+
+		// Set site spinner items
+		adapter = ArrayAdapter.createFromResource(this, R.array.sites_val,
+				android.R.layout.simple_spinner_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		site.setAdapter(adapter);
+		if (mQuery.containsKey("hosting")) {
+			String val = mQuery.get("hosting");
+			site.setSelection(findIndex(val, R.array.sites_key));
+		}
+
+		// Set extension spinner items
+		adapter = ArrayAdapter.createFromResource(this, R.array.exts,
+				android.R.layout.simple_spinner_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		ext.setAdapter(adapter);
+		if (mQuery.containsKey("select")) {
+			String val = mQuery.get("select");
+			ext.setSelection(findIndex(val, R.array.exts));
+		}
+
+		// Set date spinner items
+		adapter = ArrayAdapter.createFromResource(this, R.array.dates_val,
+				android.R.layout.simple_spinner_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		date.setAdapter(adapter);
+		if (mQuery.containsKey("date")) {
+			String val = mQuery.get("date");
+			date.setSelection(findIndex(val, R.array.dates_key));
+		}
+
+		// Set sort spinner items
+		adapter = ArrayAdapter.createFromResource(this, R.array.sorts_val,
+				android.R.layout.simple_spinner_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		sort.setAdapter(adapter);
+		if (mQuery.containsKey("sort")) {
+			String val = mQuery.get("sort");
+			sort.setSelection(findIndex(val, R.array.sorts_key));
+		}
+
+		if (mQuery.containsKey("sizefrom")) {
+			sizeMin.setText(mQuery.get("sizefrom"));
+		}
+
+		if (mQuery.containsKey("sizeto")) {
+			sizeMax.setText(mQuery.get("sizeto"));
+		}
+
+		builder.setView(view);
+		builder.setTitle(R.string.filter_title);
+
+		final AlertDialog dialog = builder.create();
+
+		OnClickListener onApply = new OnClickListener() {
+			public void onClick(View v) {
+				int val;
+				String[] arr;
+				String s;
+
+				val = site.getSelectedItemPosition();
+				if (val == 0) {
+					mQuery.remove("hosting");
+				} else {
+					arr = getResources().getStringArray(R.array.sites_key);
+					mQuery.put("hosting", arr[val]);
+				}
+
+				val = ext.getSelectedItemPosition();
+				if (val == 0) {
+					mQuery.remove("select");
+				} else {
+					arr = getResources().getStringArray(R.array.exts);
+					mQuery.put("select", arr[val]);
+				}
+
+				val = date.getSelectedItemPosition();
+				if (val == 0) {
+					mQuery.remove("date");
+				} else {
+					arr = getResources().getStringArray(R.array.dates_key);
+					mQuery.put("date", arr[val]);
+				}
+
+				val = sort.getSelectedItemPosition();
+				if (val == 0) {
+					mQuery.remove("sort");
+				} else {
+					arr = getResources().getStringArray(R.array.sorts_key);
+					mQuery.put("sort", arr[val]);
+				}
+
+				s = sizeMin.getText().toString();
+				if (s.length() == 0) {
+					mQuery.remove("sizefrom");
+				} else {
+					mQuery.put("sizefrom", s);
+				}
+
+				s = sizeMax.getText().toString();
+				if (s.length() == 0) {
+					mQuery.remove("sizeto");
+				} else {
+					mQuery.put("sizeto", s);
+				}
+
+				clearResult();
+				dialog.dismiss();
+			}
+		};
+
+		OnClickListener onClear = new OnClickListener() {
+			public void onClick(View v) {
+				((Spinner) dialog.findViewById(R.id.filterSite))
+						.setSelection(0);
+				((Spinner) dialog.findViewById(R.id.filterExt)).setSelection(0);
+				((Spinner) dialog.findViewById(R.id.filterDate))
+						.setSelection(0);
+				((Spinner) dialog.findViewById(R.id.filterSort))
+						.setSelection(0);
+				((TextView) dialog.findViewById(R.id.filterSizeFrom))
+						.setText("");
+				((TextView) dialog.findViewById(R.id.filterSizeTo)).setText("");
+			}
+		};
+
+		OnClickListener onCancel = new OnClickListener() {
+			public void onClick(View v) {
+				dialog.dismiss();
+			}
+		};
+
+		view.findViewById(R.id.filterApply).setOnClickListener(onApply);
+		view.findViewById(R.id.filterClear).setOnClickListener(onClear);
+		view.findViewById(R.id.filterCancel).setOnClickListener(onCancel);
+
+		dialog.show();
+	}
+
 	/******************/
 	/* Helper classes */
 	/******************/
@@ -192,7 +381,6 @@ public class MainActivity extends SherlockActivity {
 			mDialog.setMessage(message);
 
 			mDialog.setOnCancelListener(new OnCancelListener() {
-				@Override
 				public void onCancel(DialogInterface dialog) {
 					cancel(true);
 				}
@@ -296,7 +484,6 @@ public class MainActivity extends SherlockActivity {
 			mDialog.setMessage(message);
 
 			mDialog.setOnCancelListener(new OnCancelListener() {
-				@Override
 				public void onCancel(DialogInterface dialog) {
 					cancel(true);
 				}
@@ -315,7 +502,6 @@ public class MainActivity extends SherlockActivity {
 			mDialog.dismiss();
 
 			DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					Uri uri = Uri.parse(result.get(which).getLink());
 					Intent intent = new Intent(Intent.ACTION_VIEW, uri);

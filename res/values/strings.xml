@@ -4,11 +4,23 @@
     <string name="app_name">FilesTube Search</string>
     <string name="download">Download</string>
     <string name="fetching_download_link">Fetching download link&#8230;</string>
-    <string name="search">Search</string>
     <string name="search_hint">Search FilesTube</string>
     <string name="searching">Searching, please wait&#8230;</string>
     <string name="nothing_found">Nothing found</string>
     <string name="menu_search">Search</string>
+    <string name="menu_filter">Filter</string>
+    <string name="filter_title">Search Filter</string>
     <string name="loading">Loading&#8230;</string>
+    <string name="size_from">Size:</string>
+    <string name="size_to">to:</string>
+    <string name="sort_by">Sort:</string>
+    <string name="site">Site:</string>
+    <string name="ext">Ext:</string>
+    <string name="date">Date:</string>
+    <string name="apply">Apply</string>
+    <string name="clear">Clear</string>
+    <string name="cancel">Cancel</string>
+    <string name="max">max</string>
+    <string name="min">min</string>
 
 </resources>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="exts">
+        <item>All</item>
+        <item>3gp</item>
+        <item>avi</item>
+        <item>mkv</item>
+        <item>mp3</item>
+        <item>mp4</item>
+        <item>mpeg</item>
+        <item>mpg</item>
+        <item>rar</item>
+        <item>rmvb</item>
+        <item>wma</item>
+        <item>wmv</item>
+        <item>zip</item>
+    </string-array>
+
+</resources>
