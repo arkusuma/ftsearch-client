@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -53,6 +54,7 @@ public class MainActivity extends SherlockActivity {
 	private final ArrayList<SearchEngine.Item> mResult = new ArrayList<SearchEngine.Item>();
 	private final SparseArray<View> mAds = new SparseArray<View>();
 	private AdLoader mAdLoader;
+	private int mLastOrientation;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -76,6 +78,8 @@ public class MainActivity extends SherlockActivity {
 
 		// Get the intent, verify the action and get the query
 		handleIntent(getIntent());
+
+		mLastOrientation = getResources().getConfiguration().orientation;
 	}
 
 	@Override
@@ -152,6 +156,15 @@ public class MainActivity extends SherlockActivity {
 			break;
 		}
 		return super.onMenuItemSelected(featureId, item);
+	}
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		if (mLastOrientation != newConfig.orientation) {
+			mLastOrientation = newConfig.orientation;
+			mAdLoader.nextAd();
+		}
+		super.onConfigurationChanged(newConfig);
 	}
 
 	/********************/
