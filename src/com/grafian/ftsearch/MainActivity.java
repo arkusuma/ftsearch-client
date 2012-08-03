@@ -158,14 +158,6 @@ public class MainActivity extends SherlockActivity {
 	/* Helper functions */
 	/********************/
 
-	private void clearResult() {
-		mTotal = 0;
-		mNextIndex = 1;
-		mResult.clear();
-		mResultAdapter.notifyDataSetChanged();
-		updateFooter();
-	}
-
 	@SuppressWarnings("unchecked")
 	private void search(String query) {
 		if (mSearchTask == null) {
@@ -328,8 +320,11 @@ public class MainActivity extends SherlockActivity {
 					mQuery.put("sizeto", s);
 				}
 
-				clearResult();
 				dialog.dismiss();
+
+				if (mQuery.containsKey("q")) {
+					search(mQuery.get("q"));
+				}
 			}
 		};
 
