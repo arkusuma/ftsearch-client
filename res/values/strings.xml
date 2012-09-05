@@ -8,19 +8,15 @@
     <string name="searching">Searching, please wait&#8230;</string>
     <string name="nothing_found">Nothing found</string>
     <string name="menu_search">Search</string>
-    <string name="menu_filter">Filter</string>
-    <string name="filter_title">Search Filter</string>
     <string name="loading">Loading&#8230;</string>
-    <string name="size_from">Size:</string>
-    <string name="size_to">to:</string>
-    <string name="sort_by">Sort:</string>
-    <string name="site">Site:</string>
-    <string name="ext">Ext:</string>
-    <string name="date">Date:</string>
+    <string name="size">Size</string>
+    <string name="size_min">min</string>
+    <string name="size_max">max</string>
+    <string name="sort_by">Sort by</string>
+    <string name="site">Site</string>
+    <string name="ext">Type</string>
+    <string name="date">Date</string>
     <string name="apply">Apply</string>
-    <string name="clear">Clear</string>
-    <string name="cancel">Cancel</string>
-    <string name="max">max</string>
-    <string name="min">min</string>
+    <string name="reset">Reset</string>
 
 </resources>

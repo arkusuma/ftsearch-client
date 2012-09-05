@@ -1,6 +1,7 @@
 package com.grafian.ftsearch;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Spinner;
@@ -43,6 +45,7 @@ public class MainActivity extends SherlockActivity {
 	private ListView mResultList;
 	private ResultAdapter mResultAdapter;
 	private View mFooterView;
+	private MySlidingDrawer mDrawer;
 
 	private final Map<String, String> mQuery = new HashMap<String, String>();
 	private int mTotal;
@@ -53,8 +56,6 @@ public class MainActivity extends SherlockActivity {
 
 	private final ArrayList<SearchEngine.Item> mResult = new ArrayList<SearchEngine.Item>();
 	private final SparseArray<View> mAds = new SparseArray<View>();
-	private AdLoader mAdLoader;
-	private int mLastOrientation;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -62,8 +63,8 @@ public class MainActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		mResultList = (ListView) findViewById(R.id.mainResultList);
-		mAdLoader = new AdLoader(this);
+		mDrawer = (MySlidingDrawer) findViewById(R.id.drawer);
+		mResultList = (ListView) findViewById(R.id.resultList);
 
 		// Work around for ListView footer bug
 		mFooterView = LayoutInflater.from(this).inflate(
@@ -71,7 +72,7 @@ public class MainActivity extends SherlockActivity {
 		mResultList.addFooterView(mFooterView);
 		mResultAdapter = new ResultAdapter(this, 0, mResult);
 		mResultList.setAdapter(mResultAdapter);
-		mResultList.removeFooterView(mFooterView);
+		updateFooter();
 
 		// Set event handler
 		mResultList.setOnItemClickListener(mOnResultListItemClick);
@@ -79,7 +80,7 @@ public class MainActivity extends SherlockActivity {
 		// Get the intent, verify the action and get the query
 		handleIntent(getIntent());
 
-		mLastOrientation = getResources().getConfiguration().orientation;
+		initFilter();
 	}
 
 	@Override
@@ -151,19 +152,15 @@ public class MainActivity extends SherlockActivity {
 				return true;
 			}
 			break;
-		case R.id.menu_filter:
-			showFilter();
-			break;
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
 
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
-		if (mLastOrientation != newConfig.orientation) {
-			mLastOrientation = newConfig.orientation;
-			mAdLoader.nextAd();
-		}
+		LinearLayout layout = (LinearLayout) findViewById(R.id.adContainer);
+		layout.removeAllViews();
+		LayoutInflater.from(this).inflate(R.layout.ad, layout);
 		super.onConfigurationChanged(newConfig);
 	}
 
@@ -193,93 +190,68 @@ public class MainActivity extends SherlockActivity {
 	}
 
 	private void updateFooter() {
-		if (mNextIndex > mTotal) {
-			if (mResultList.getFooterViewsCount() > 0) {
-				mResultList.removeFooterView(mFooterView);
-			}
-		} else {
+		View loading = mFooterView.findViewById(R.id.loading);
+		if (mTotal > 0) {
 			if (mResultList.getFooterViewsCount() == 0) {
 				mResultList.addFooterView(mFooterView);
 			}
-		}
-	}
-
-	private int findIndex(String s, int id) {
-		String[] array = getResources().getStringArray(id);
-		for (int i = 0; i < array.length; i++) {
-			if (s.equals(array[i])) {
-				return i;
+		} else {
+			if (mResultList.getFooterViewsCount() != 0) {
+				mResultList.removeFooterView(mFooterView);
 			}
 		}
-		return 0;
+		if (mNextIndex > mTotal) {
+			loading.setVisibility(View.GONE);
+		} else {
+			loading.setVisibility(View.VISIBLE);
+		}
 	}
 
-	private void showFilter() {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		View view = getLayoutInflater().inflate(R.layout.main_filter, null);
+	private void initFilter() {
 		ArrayAdapter<CharSequence> adapter;
 
-		final Spinner site = (Spinner) view.findViewById(R.id.filterSite);
-		final Spinner ext = (Spinner) view.findViewById(R.id.filterExt);
-		final Spinner date = (Spinner) view.findViewById(R.id.filterDate);
-		final Spinner sort = (Spinner) view.findViewById(R.id.filterSort);
-		final TextView sizeMin = (TextView) view
-				.findViewById(R.id.filterSizeFrom);
-		final TextView sizeMax = (TextView) view
-				.findViewById(R.id.filterSizeTo);
+		final Spinner site = (Spinner) findViewById(R.id.filterSite);
+		final Spinner ext = (Spinner) findViewById(R.id.filterExt);
+		final Spinner date = (Spinner) findViewById(R.id.filterDate);
+		final Spinner sort = (Spinner) findViewById(R.id.filterSort);
+		final TextView sizeMin = (TextView) findViewById(R.id.filterSizeFrom);
+		final TextView sizeMax = (TextView) findViewById(R.id.filterSizeTo);
 
 		// Set site spinner items
 		adapter = ArrayAdapter.createFromResource(this, R.array.sites_val,
 				android.R.layout.simple_spinner_item);
+		adapter.sort(new Comparator<CharSequence>() {
+			public int compare(CharSequence lhs, CharSequence rhs) {
+				boolean a = "All".equals(lhs);
+				boolean b = "All".equals(rhs);
+				if (a && !b) {
+					return -1;
+				} else if (!a && b) {
+					return 1;
+				}
+				return lhs.toString().compareTo(rhs.toString());
+			}
+		});
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		site.setAdapter(adapter);
-		if (mQuery.containsKey("hosting")) {
-			String val = mQuery.get("hosting");
-			site.setSelection(findIndex(val, R.array.sites_key));
-		}
 
 		// Set extension spinner items
 		adapter = ArrayAdapter.createFromResource(this, R.array.exts,
 				android.R.layout.simple_spinner_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		ext.setAdapter(adapter);
-		if (mQuery.containsKey("select")) {
-			String val = mQuery.get("select");
-			ext.setSelection(findIndex(val, R.array.exts));
-		}
 
 		// Set date spinner items
 		adapter = ArrayAdapter.createFromResource(this, R.array.dates_val,
 				android.R.layout.simple_spinner_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		date.setAdapter(adapter);
-		if (mQuery.containsKey("date")) {
-			String val = mQuery.get("date");
-			date.setSelection(findIndex(val, R.array.dates_key));
-		}
 
 		// Set sort spinner items
 		adapter = ArrayAdapter.createFromResource(this, R.array.sorts_val,
 				android.R.layout.simple_spinner_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		sort.setAdapter(adapter);
-		if (mQuery.containsKey("sort")) {
-			String val = mQuery.get("sort");
-			sort.setSelection(findIndex(val, R.array.sorts_key));
-		}
-
-		if (mQuery.containsKey("sizefrom")) {
-			sizeMin.setText(mQuery.get("sizefrom"));
-		}
-
-		if (mQuery.containsKey("sizeto")) {
-			sizeMax.setText(mQuery.get("sizeto"));
-		}
-
-		builder.setView(view);
-		builder.setTitle(R.string.filter_title);
-
-		final AlertDialog dialog = builder.create();
 
 		OnClickListener onApply = new OnClickListener() {
 			public void onClick(View v) {
@@ -287,11 +259,20 @@ public class MainActivity extends SherlockActivity {
 				String[] arr;
 				String s;
 
-				val = site.getSelectedItemPosition();
+				val = 0;
+				s = (String) site.getSelectedItem();
+				String[] vals = getResources()
+						.getStringArray(R.array.sites_val);
+				arr = getResources().getStringArray(R.array.sites_key);
+				for (int i = 0; i < arr.length; i++) {
+					if (vals[i].equals(s)) {
+						val = i;
+						break;
+					}
+				}
 				if (val == 0) {
 					mQuery.remove("hosting");
 				} else {
-					arr = getResources().getStringArray(R.array.sites_key);
 					mQuery.put("hosting", arr[val]);
 				}
 
@@ -333,7 +314,7 @@ public class MainActivity extends SherlockActivity {
 					mQuery.put("sizeto", s);
 				}
 
-				dialog.dismiss();
+				mDrawer.animateClose();
 
 				if (mQuery.containsKey("q")) {
 					search(mQuery.get("q"));
@@ -341,32 +322,19 @@ public class MainActivity extends SherlockActivity {
 			}
 		};
 
-		OnClickListener onClear = new OnClickListener() {
+		OnClickListener onReset = new OnClickListener() {
 			public void onClick(View v) {
-				((Spinner) dialog.findViewById(R.id.filterSite))
-						.setSelection(0);
-				((Spinner) dialog.findViewById(R.id.filterExt)).setSelection(0);
-				((Spinner) dialog.findViewById(R.id.filterDate))
-						.setSelection(0);
-				((Spinner) dialog.findViewById(R.id.filterSort))
-						.setSelection(0);
-				((TextView) dialog.findViewById(R.id.filterSizeFrom))
-						.setText("");
-				((TextView) dialog.findViewById(R.id.filterSizeTo)).setText("");
+				((Spinner) findViewById(R.id.filterSite)).setSelection(0);
+				((Spinner) findViewById(R.id.filterExt)).setSelection(0);
+				((Spinner) findViewById(R.id.filterDate)).setSelection(0);
+				((Spinner) findViewById(R.id.filterSort)).setSelection(0);
+				((TextView) findViewById(R.id.filterSizeFrom)).setText("");
+				((TextView) findViewById(R.id.filterSizeTo)).setText("");
 			}
 		};
 
-		OnClickListener onCancel = new OnClickListener() {
-			public void onClick(View v) {
-				dialog.dismiss();
-			}
-		};
-
-		view.findViewById(R.id.filterApply).setOnClickListener(onApply);
-		view.findViewById(R.id.filterClear).setOnClickListener(onClear);
-		view.findViewById(R.id.filterCancel).setOnClickListener(onCancel);
-
-		dialog.show();
+		findViewById(R.id.filterApply).setOnClickListener(onApply);
+		findViewById(R.id.filterReset).setOnClickListener(onReset);
 	}
 
 	/******************/
@@ -420,7 +388,6 @@ public class MainActivity extends SherlockActivity {
 						String.format("%d of %d",
 								mEngine.getIndex() + result.size() - 1, mTotal),
 						Toast.LENGTH_SHORT).show();
-				result.add((int) (Math.random() * (result.size() + 1)), null);
 			}
 
 			mAds.clear();
@@ -456,10 +423,6 @@ public class MainActivity extends SherlockActivity {
 					String.format("%d of %d",
 							mEngine.getIndex() + result.size() - 1, mTotal),
 					Toast.LENGTH_SHORT).show();
-
-			if ((mNextIndex / 10) % 2 == 0) {
-				result.add((int) (Math.random() * (result.size() + 1)), null);
-			}
 
 			mTotal = mEngine.getTotal();
 			mNextIndex = mEngine.getIndex() + 10;
@@ -574,51 +537,41 @@ public class MainActivity extends SherlockActivity {
 		public View getView(int position, View convertView, ViewGroup parent) {
 			View view;
 			SearchEngine.Item item = getItem(position);
-			if (item == null) {
-				if (mAds.get(position) != null) {
-					view = mAds.get(position);
-				} else {
-					view = mAdLoader.nextAd();
-					mAds.put(position, view);
-				}
+			view = convertView;
+			if (view == null) {
+				LayoutInflater inf = LayoutInflater.from(MainActivity.this);
+				view = inf.inflate(R.layout.main_list_item, null);
+			}
+
+			ImageView viewImage = (ImageView) view
+					.findViewById(R.id.mainResultIcon);
+			TextView viewTitle = (TextView) view
+					.findViewById(R.id.mainResultTitle);
+			TextView viewDate = (TextView) view
+					.findViewById(R.id.mainResultDate);
+			TextView viewSize = (TextView) view
+					.findViewById(R.id.mainResultSize);
+			TextView viewExt = (TextView) view.findViewById(R.id.mainResultExt);
+			TextView viewSite = (TextView) view
+					.findViewById(R.id.mainResultSite);
+
+			Drawable icon = IconManager.getIcon(item.getExt());
+			viewImage.setImageDrawable(icon);
+			viewTitle.setText(item.getTitle());
+			viewDate.setText(item.getDate());
+			viewSite.setText(item.getSite());
+
+			if (item.getParts() == 1) {
+				viewSize.setText(item.getSize());
 			} else {
-				view = convertView;
-				if (view == null) {
-					LayoutInflater inf = LayoutInflater.from(MainActivity.this);
-					view = inf.inflate(R.layout.main_list_item, null);
-				}
-
-				ImageView viewImage = (ImageView) view
-						.findViewById(R.id.mainResultIcon);
-				TextView viewTitle = (TextView) view
-						.findViewById(R.id.mainResultTitle);
-				TextView viewDate = (TextView) view
-						.findViewById(R.id.mainResultDate);
-				TextView viewSize = (TextView) view
-						.findViewById(R.id.mainResultSize);
-				TextView viewExt = (TextView) view
-						.findViewById(R.id.mainResultExt);
-				TextView viewSite = (TextView) view
-						.findViewById(R.id.mainResultSite);
-
-				Drawable icon = IconManager.getIcon(item.getExt());
-				viewImage.setImageDrawable(icon);
-				viewTitle.setText(item.getTitle());
-				viewDate.setText(item.getDate());
-				viewSite.setText(item.getSite());
-
-				if (item.getParts() == 1) {
-					viewSize.setText(item.getSize());
-				} else {
-					viewSize.setText(String.format("%s - %d parts",
-							item.getSize(), item.getParts()));
-				}
-				if (icon == IconManager.getDefault()) {
-					viewExt.setVisibility(View.VISIBLE);
-					viewExt.setText(item.getExt().toUpperCase());
-				} else {
-					viewExt.setVisibility(View.GONE);
-				}
+				viewSize.setText(String.format("%s - %d parts", item.getSize(),
+						item.getParts()));
+			}
+			if (icon == IconManager.getDefault()) {
+				viewExt.setVisibility(View.VISIBLE);
+				viewExt.setText(item.getExt().toUpperCase());
+			} else {
+				viewExt.setVisibility(View.GONE);
 			}
 
 			if (position == getCount() - 1) {

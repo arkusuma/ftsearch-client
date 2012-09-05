@@ -1,15 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
     <ListView
-        android:id="@+id/mainResultList"
+        android:id="@+id/resultList"
         android:layout_width="fill_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1" >
-    </ListView>
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/adContainer" />
 
-</LinearLayout>
+    <com.grafian.ftsearch.MySlidingDrawer
+        android:id="@+id/drawer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/adContainer"
+        android:content="@+id/content"
+        android:handle="@+id/handle" >
+
+        <LinearLayout
+            android:id="@+id/handle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/filter"
+            android:gravity="center" />
+
+        <include
+            android:id="@+id/content"
+            layout="@layout/filter" />
+    </com.grafian.ftsearch.MySlidingDrawer>
+
+    <LinearLayout
+        android:id="@+id/adContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" >
+
+        <include layout="@layout/ad" />
+    </LinearLayout>
+
+</RelativeLayout>

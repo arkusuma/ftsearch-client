@@ -2,13 +2,27 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/filter_bg_tiled"
+    android:clickable="true"
+    android:gravity="center_horizontal"
     android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/filter_top_tiled"
+        android:gravity="center" >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/filter_top_center" />
+    </LinearLayout>
 
     <TableLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="10dp" >
+        android:padding="8dip" >
 
         <TableRow
             android:layout_width="wrap_content"
@@ -17,6 +31,46 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="right|center_vertical"
+                android:padding="4dp"
+                android:text="@string/size" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <EditText
+                    android:id="@+id/filterSizeFrom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="5"
+                    android:hint="@string/size_min"
+                    android:inputType="number"
+                    android:singleLine="true" />
+
+                <EditText
+                    android:id="@+id/filterSizeTo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="5"
+                    android:hint="@string/size_max"
+                    android:inputType="number"
+                    android:singleLine="true" >
+
+                    <requestFocus />
+                </EditText>
+            </LinearLayout>
+        </TableRow>
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right|center_vertical"
                 android:padding="4dp"
                 android:text="@string/site" />
 
@@ -33,6 +87,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="right|center_vertical"
                 android:padding="4dp"
                 android:text="@string/ext" />
 
@@ -48,53 +103,11 @@
             android:gravity="center_vertical" >
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="4dp"
-                android:text="@string/size_from" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" >
-
-                <EditText
-                    android:id="@+id/filterSizeFrom"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:ems="4"
-                    android:hint="@string/min"
-                    android:inputType="number"
-                    android:singleLine="true" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/size_to" />
-
-                <EditText
-                    android:id="@+id/filterSizeTo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:ems="4"
-                    android:hint="@string/max"
-                    android:inputType="number"
-                    android:singleLine="true" >
-
-                    <requestFocus />
-                </EditText>
-            </LinearLayout>
-        </TableRow>
-
-        <TableRow
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <TextView
                 android:id="@+id/textViewDate"
                 android:layout_width="wrap_content"
-                android:padding="4dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="right|center_vertical"
+                android:padding="4dp"
                 android:text="@string/date" />
 
             <Spinner
@@ -111,6 +124,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="right|center_vertical"
                 android:padding="4dp"
                 android:text="@string/sort_by" />
 
@@ -127,24 +141,17 @@
 
         <Button
             android:id="@+id/filterApply"
-            android:layout_width="wrap_content"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/apply" />
 
         <Button
-            android:id="@+id/filterClear"
-            android:layout_width="wrap_content"
+            android:id="@+id/filterReset"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/clear" />
-
-        <Button
-            android:id="@+id/filterCancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/cancel" />
+            android:text="@string/reset" />
     </LinearLayout>
 
 </LinearLayout>

@@ -3,21 +3,21 @@
 
     <string-array name="sorts_key">
         <item>none</item>
-        <item>da</item>
         <item>dd</item>
-        <item>sa</item>
+        <item>da</item>
         <item>sd</item>
-        <item>pa</item>
+        <item>sa</item>
         <item>pd</item>
+        <item>pa</item>
     </string-array>
     <string-array name="sorts_val">
-        <item>none</item>
-        <item>date ascending</item>
-        <item>date descending</item>
-        <item>size ascending</item>
-        <item>size descdending</item>
-        <item>popularity ascending</item>
-        <item>popularity descending</item>
+        <item>None</item>
+        <item>Date descending</item>
+        <item>Date ascending</item>
+        <item>Size descdending</item>
+        <item>Size ascending</item>
+        <item>Popularity descending</item>
+        <item>Popularity ascending</item>
     </string-array>
 
 </resources>

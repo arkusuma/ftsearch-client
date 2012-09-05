@@ -12,14 +12,14 @@
         <item>7</item>
     </string-array>
     <string-array name="dates_val">
-        <item>whenever</item>
-        <item>last 24 hours</item>
-        <item>last week</item>
-        <item>last month</item>
-        <item>last 2 months</item>
-        <item>last 4 months</item>
-        <item>last 6 months</item>
-        <item>last year</item>
+        <item>Whenever</item>
+        <item>Last 24 hours</item>
+        <item>Last week</item>
+        <item>Last month</item>
+        <item>Last 2 months</item>
+        <item>Last 4 months</item>
+        <item>Last 6 months</item>
+        <item>Last year</item>
     </string-array>
 
 </resources>
