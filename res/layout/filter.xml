@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/filter_bg_tiled"
     android:clickable="true"
-    android:gravity="center_horizontal"
+    android:gravity="center"
     android:orientation="vertical" >
 
     <LinearLayout
@@ -19,139 +19,151 @@
             android:background="@drawable/filter_top_center" />
     </LinearLayout>
 
-    <TableLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="8dip" >
-
-        <TableRow
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right|center_vertical"
-                android:padding="4dp"
-                android:text="@string/size" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" >
-
-                <EditText
-                    android:id="@+id/filterSizeFrom"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:ems="5"
-                    android:hint="@string/size_min"
-                    android:inputType="number"
-                    android:singleLine="true" />
-
-                <EditText
-                    android:id="@+id/filterSizeTo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:ems="5"
-                    android:hint="@string/size_max"
-                    android:inputType="number"
-                    android:singleLine="true" >
-
-                    <requestFocus />
-                </EditText>
-            </LinearLayout>
-        </TableRow>
-
-        <TableRow
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right|center_vertical"
-                android:padding="4dp"
-                android:text="@string/site" />
-
-            <Spinner
-                android:id="@+id/filterSite"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right|center_vertical"
-                android:padding="4dp"
-                android:text="@string/ext" />
-
-            <Spinner
-                android:id="@+id/filterExt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical" >
-
-            <TextView
-                android:id="@+id/textViewDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right|center_vertical"
-                android:padding="4dp"
-                android:text="@string/date" />
-
-            <Spinner
-                android:id="@+id/filterDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical" >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right|center_vertical"
-                android:padding="4dp"
-                android:text="@string/sort_by" />
-
-            <Spinner
-                android:id="@+id/filterSort"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </TableRow>
-    </TableLayout>
-
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
-        <Button
-            android:id="@+id/filterApply"
-            android:layout_width="0dip"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/apply" />
+            android:gravity="center"
+            android:orientation="vertical" >
 
-        <Button
-            android:id="@+id/filterReset"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/reset" />
-    </LinearLayout>
+            <TableLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="4dip" >
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right|center_vertical"
+                        android:padding="4dp"
+                        android:text="@string/size" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" >
+
+                        <EditText
+                            android:id="@+id/filterSizeFrom"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:ems="5"
+                            android:hint="@string/size_min"
+                            android:inputType="number"
+                            android:singleLine="true" />
+
+                        <EditText
+                            android:id="@+id/filterSizeTo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:ems="5"
+                            android:hint="@string/size_max"
+                            android:inputType="number"
+                            android:singleLine="true" >
+
+                            <requestFocus />
+                        </EditText>
+                    </LinearLayout>
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right|center_vertical"
+                        android:padding="4dp"
+                        android:text="@string/site" />
+
+                    <Spinner
+                        android:id="@+id/filterSite"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right|center_vertical"
+                        android:padding="4dp"
+                        android:text="@string/ext" />
+
+                    <Spinner
+                        android:id="@+id/filterExt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical" >
+
+                    <TextView
+                        android:id="@+id/textViewDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right|center_vertical"
+                        android:padding="4dp"
+                        android:text="@string/date" />
+
+                    <Spinner
+                        android:id="@+id/filterDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical" >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right|center_vertical"
+                        android:padding="4dp"
+                        android:text="@string/sort_by" />
+
+                    <Spinner
+                        android:id="@+id/filterSort"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </TableRow>
+            </TableLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <Button
+                    android:id="@+id/filterApply"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/apply" />
+
+                <Button
+                    android:id="@+id/filterReset"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/reset" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

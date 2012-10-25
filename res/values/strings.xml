@@ -18,5 +18,24 @@
     <string name="date">Date</string>
     <string name="apply">Apply</string>
     <string name="reset">Reset</string>
+    <string name="clear">Clear results</string>
+    <string name="support_title">Thank you for using this app</string>
+    <string name="support_message">Please support us if you found it useful :)</string>
+    <string name="not_now">Not Now!</string>
+    <string name="copyright">Grafian Software Crafter 2012\nBandung, Indonesia</string>
+    <string name="website">Website: http://grafian.com</string>
+    <string name="rate">Rate 5 stars</string>
+    <string name="donate">Donate via PayPal</string>
+    <string name="share">Share with friends</string>
+    <string name="share_subject">FilesTube Search</string>
+    <string name="share_text">Hi, I\'m using FilesTube Search on my Android to search for shared online files. Check it out at Play Store. http://goo.gl/gO8Cf</string>
+    <string name="about">About</string>
+    <string name="visit_web">Visit us</string>
+    <string name="more_apps">More apps</string>
+    <string name="okay">Okay cool!</string>
+    <string name="open_with">Download using</string>
+    <string name="welcome">Welcome to FilesTube Search!</string>
+    <string name="intro1">Search files by tapping the search icon on top.</string>
+    <string name="intro2">Filter your search by swiping the drawer below.</string>
 
 </resources>

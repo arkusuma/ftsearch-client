@@ -1,5 +1,6 @@
 package com.grafian.ftsearch;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,13 +15,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -42,6 +43,8 @@ import com.actionbarsherlock.view.MenuItem;
 
 public class MainActivity extends SherlockActivity {
 
+	private static final String DONATION_URL = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2D3BG2TWM5WJA";
+
 	private ListView mResultList;
 	private ResultAdapter mResultAdapter;
 	private View mFooterView;
@@ -55,7 +58,6 @@ public class MainActivity extends SherlockActivity {
 	private ExpandTask mExpandTask;
 
 	private final ArrayList<SearchEngine.Item> mResult = new ArrayList<SearchEngine.Item>();
-	private final SparseArray<View> mAds = new SparseArray<View>();
 
 	/** Called when the activity is first created. */
 	@Override
@@ -65,6 +67,7 @@ public class MainActivity extends SherlockActivity {
 
 		mDrawer = (MySlidingDrawer) findViewById(R.id.drawer);
 		mResultList = (ListView) findViewById(R.id.resultList);
+		mResultList.setEmptyView(findViewById(R.id.intro));
 
 		// Work around for ListView footer bug
 		mFooterView = LayoutInflater.from(this).inflate(
@@ -99,17 +102,16 @@ public class MainActivity extends SherlockActivity {
 	@TargetApi(11)
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
 		getSupportMenuInflater().inflate(R.menu.main, menu);
 
 		if (Build.VERSION.SDK_INT >= 11) {
 			// Get the SearchView and set the searchable configuration
-			SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-			SearchView searchView = (SearchView) menu
-					.findItem(R.id.menu_search).getActionView();
-			searchView.setSearchableInfo(searchManager
-					.getSearchableInfo(getComponentName()));
-			searchView.setQueryHint(getString(R.string.search_hint));
-			searchView.setOnSearchClickListener(new OnClickListener() {
+			SearchManager mgr = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+			SearchView view = (SearchView) menu.findItem(R.id.menu_search).getActionView();
+			view.setSearchableInfo(mgr.getSearchableInfo(getComponentName()));
+			view.setQueryHint(getString(R.string.search_hint));
+			view.setOnSearchClickListener(new OnClickListener() {
 				public void onClick(View v) {
 					String query = "";
 					if (mQuery.containsKey("q")) {
@@ -119,8 +121,7 @@ public class MainActivity extends SherlockActivity {
 				}
 			});
 		}
-
-		return super.onCreateOptionsMenu(menu);
+		return true;
 	}
 
 	/******************/
@@ -140,7 +141,7 @@ public class MainActivity extends SherlockActivity {
 	};
 
 	@Override
-	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_search:
 			if (Build.VERSION.SDK_INT < 11) {
@@ -149,11 +150,29 @@ public class MainActivity extends SherlockActivity {
 					query = mQuery.get("q");
 				}
 				startSearch(query, true, null, false);
-				return true;
 			}
 			break;
+		case R.id.clear:
+			mQuery.clear();
+			mResult.clear();
+			mResultAdapter.notifyDataSetChanged();
+			break;
+		case R.id.rate:
+			doRate();
+			break;
+		case R.id.share:
+			doShare();
+			break;
+		case R.id.donate:
+			doDonate();
+			break;
+		case R.id.about:
+			doAbout();
+			break;
+		default:
+			return super.onOptionsItemSelected(item);
 		}
-		return super.onMenuItemSelected(featureId, item);
+		return true;
 	}
 
 	@Override
@@ -167,6 +186,12 @@ public class MainActivity extends SherlockActivity {
 	/********************/
 	/* Helper functions */
 	/********************/
+
+	private static String formatNumber(int number) {
+		NumberFormat fmt = NumberFormat.getInstance();
+		fmt.setGroupingUsed(true);
+		return fmt.format(number);
+	}
 
 	@SuppressWarnings("unchecked")
 	private void search(String query) {
@@ -385,18 +410,19 @@ public class MainActivity extends SherlockActivity {
 			} else {
 				Toast.makeText(
 						MainActivity.this,
-						String.format("%d of %d",
-								mEngine.getIndex() + result.size() - 1, mTotal),
+						String.format("%d of %s",
+								mEngine.getIndex() + result.size() - 1, formatNumber(mTotal)),
 						Toast.LENGTH_SHORT).show();
 			}
 
-			mAds.clear();
 			mResult.clear();
 			mResult.addAll(result);
 			mResultAdapter.notifyDataSetChanged();
 			mResultList.setSelectionAfterHeaderView();
 
 			mSearchTask = null;
+
+			showSupport();
 		}
 
 		@Override
@@ -420,8 +446,8 @@ public class MainActivity extends SherlockActivity {
 		protected void onPostExecute(ArrayList<SearchEngine.Item> result) {
 			Toast.makeText(
 					MainActivity.this,
-					String.format("%d of %d",
-							mEngine.getIndex() + result.size() - 1, mTotal),
+					String.format("%d of %s",
+							mEngine.getIndex() + result.size() - 1, formatNumber(mTotal)),
 					Toast.LENGTH_SHORT).show();
 
 			mTotal = mEngine.getTotal();
@@ -476,16 +502,18 @@ public class MainActivity extends SherlockActivity {
 				public void onClick(DialogInterface dialog, int which) {
 					Uri uri = Uri.parse(result.get(which).getLink());
 					Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-					startActivity(intent);
+					Intent chooser = Intent.createChooser(intent, getString(R.string.open_with));
+					startActivity(chooser);
 				}
 			};
 
-			AlertDialog.Builder builder = new AlertDialog.Builder(
-					MainActivity.this);
-			builder.setTitle(R.string.download);
-			builder.setAdapter(new LinkAdapter(MainActivity.this,
-					R.layout.main_link_list_item, result), listener);
-			builder.create().show();
+			LinkAdapter adapter = new LinkAdapter(MainActivity.this,
+					R.layout.main_link_list_item, result);
+
+			new AlertDialog.Builder(MainActivity.this)
+					.setTitle(R.string.download)
+					.setAdapter(adapter, listener)
+					.show();
 		}
 	}
 
@@ -591,4 +619,96 @@ public class MainActivity extends SherlockActivity {
 			return 2;
 		}
 	}
+
+	private int getRunCounter() {
+		return getPreferences(MODE_PRIVATE).getInt("runCounter", 0);
+	}
+
+	private void setRunCounter(int counter) {
+		Editor ed = getPreferences(MODE_PRIVATE).edit();
+		ed.putInt("runCounter", counter);
+		ed.commit();
+	}
+
+	private final DialogInterface.OnClickListener mSupportListener = new DialogInterface.OnClickListener() {
+		public void onClick(DialogInterface dialog, int which) {
+			switch (which) {
+			case 0:
+				doRate();
+				break;
+			case 1:
+				doShare();
+				break;
+			case 2:
+				doDonate();
+				break;
+			}
+			dialog.dismiss();
+		}
+	};
+
+	private void showSupport() {
+		int counter = getRunCounter() + 1;
+		setRunCounter(counter);
+		if (counter % 20 == 0) {
+			String items[] = {
+					getString(R.string.rate),
+					getString(R.string.share),
+					getString(R.string.donate) };
+			View title = getLayoutInflater().inflate(R.layout.support, null);
+			new AlertDialog.Builder(this)
+					.setCustomTitle(title)
+					.setItems(items, mSupportListener)
+					.setNeutralButton(R.string.not_now, mSupportListener)
+					.setCancelable(true)
+					.show();
+		}
+	}
+
+	private void doRate() {
+		Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName()));
+		startActivity(intent);
+	}
+
+	private void doShare() {
+		Intent intent = new Intent(Intent.ACTION_SEND);
+		intent.setType("plain/text");
+		intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_subject));
+		intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_text));
+		startActivity(Intent.createChooser(intent, getString(R.string.share)));
+	}
+
+	private void doDonate() {
+		Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(DONATION_URL));
+		startActivity(intent);
+	}
+
+	private void doAbout() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		View about = getLayoutInflater().inflate(R.layout.about, null);
+		builder.setCustomTitle(about);
+		builder.setPositiveButton(R.string.visit_web, mAboutListener);
+		builder.setNeutralButton(R.string.more_apps, mAboutListener);
+		builder.setNegativeButton(R.string.okay, mAboutListener);
+		builder.setCancelable(true);
+		builder.show();
+	}
+
+	private final DialogInterface.OnClickListener mAboutListener = new DialogInterface.OnClickListener() {
+
+		public void onClick(DialogInterface dialog, int which) {
+			Intent intent;
+			switch (which) {
+			case DialogInterface.BUTTON_POSITIVE:
+				intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://grafian.com"));
+				startActivity(intent);
+				break;
+			case DialogInterface.BUTTON_NEUTRAL:
+				intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/search?q=pub:Grafian%20Software%20Crafter"));
+				startActivity(intent);
+				break;
+			}
+			dialog.dismiss();
+		}
+	};
 }

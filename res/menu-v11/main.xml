@@ -7,5 +7,25 @@
         android:icon="@drawable/ic_action_search"
         android:showAsAction="ifRoom|collapseActionView"
         android:title="@string/menu_search"/>
+    <item
+        android:id="@+id/clear"
+        android:showAsAction="never"
+        android:title="@string/clear"/>
+    <item
+        android:id="@+id/rate"
+        android:showAsAction="never"
+        android:title="@string/rate"/>
+    <item
+        android:id="@+id/share"
+        android:showAsAction="never"
+        android:title="@string/share"/>
+    <item
+        android:id="@+id/donate"
+        android:showAsAction="never"
+        android:title="@string/donate"/>
+    <item
+        android:id="@+id/about"
+        android:showAsAction="never"
+        android:title="@string/about"/>
 
 </menu>
